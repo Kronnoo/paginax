@@ -1,0 +1,970 @@
+Calculadora de Horas de Servicio — Código corregido
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Calculadora de Horas de Servicio</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f2f4f7;
+    color: #17202a;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+main {
+    max-width: 920px;
+    margin: auto;
+    padding: 22px 15px 45px;
+}
+
+h1 {
+    margin: 0 0 5px;
+    font-size: clamp(25px, 6vw, 38px);
+}
+
+.sub {
+    margin: 0 0 18px;
+    color: #68737d;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+}
+
+.card {
+    background: white;
+    border: 1px solid #dce2e8;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 5px 18px rgba(0,0,0,.05);
+}
+
+.label {
+    font-size: 14px;
+    color: #68737d;
+    margin-bottom: 6px;
+}
+
+.big {
+    font-size: clamp(28px, 8vw, 43px);
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.bar {
+    height: 11px;
+    background: #e7ebef;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 12px;
+}
+
+.bar i {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: #2563eb;
+    transition: .25s;
+}
+
+.meta {
+    display: flex;
+    justify-content: space-between;
+    color: #68737d;
+    font-size: 13px;
+    margin-top: 7px;
+}
+
+.form {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    color: #68737d;
+    margin-bottom: 5px;
+}
+
+input,
+button {
+    min-height: 46px;
+    width: 100%;
+    border: 1px solid #d8dee5;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font: inherit;
+}
+
+button {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.secondary {
+    background: white;
+    color: #17202a;
+    border-color: #d8dee5;
+}
+
+.danger {
+    background: white;
+    color: #dc2626;
+    border-color: #fecaca;
+    padding: 7px 9px;
+    min-height: 34px;
+}
+
+.note {
+    margin-top: 11px;
+    padding: 10px 12px;
+    background: #eff6ff;
+    color: #1e40af;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.table {
+    overflow: auto;
+    max-height: 430px;
+    margin-top: 12px;
+    border: 1px solid #dde3e8;
+    border-radius: 12px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 620px;
+}
+
+th,
+td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e9ed;
+    text-align: left;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+}
+
+.small {
+    font-size: 13px;
+    color: #68737d;
+}
+
+@media (max-width: 720px) {
+    .grid,
+    .form {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<main>
+
+<h1>⏱️ Calculadora de horas</h1>
+
+<p class="sub">
+    Tus registros ya están cargados. Las horas están corregidas según tus horarios reales.
+</p>
+
+<section class="grid">
+
+<div class="card">
+
+    <div class="label">
+        Horas acumuladas
+    </div>
+
+    <div class="big" id="total">
+        0 h 0 min
+    </div>
+
+    <div class="meta">
+        <span>Meta: 480 h</span>
+        <span id="pct">0%</span>
+    </div>
+
+    <div class="bar">
+        <i id="bar"></i>
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="label">
+        Horas que faltan
+    </div>
+
+    <div class="big" id="left">
+        0 h 0 min
+    </div>
+
+    <div class="small" id="status"></div>
+
+</div>
+
+</section>
+
+<section class="card" style="margin-top:13px">
+
+<div class="label">
+    Agregar registro
+</div>
+
+<div class="form">
+
+<div>
+    <label>Fecha</label>
+    <input id="date" type="date">
+</div>
+
+<div>
+    <label>Entrada</label>
+    <input id="entry" type="time">
+</div>
+
+<div>
+    <label>Salida</label>
+    <input id="exit" type="time">
+</div>
+
+<div>
+    <button id="add">
+        Agregar
+    </button>
+</div>
+
+</div>
+
+<div class="note">
+    🕐 Regla: 02 significa 14:00 (2 PM). Las entradas normales son 09:00, 09:30 o 10:00 AM; si no, se considera entrada de las 14:00.
+</div>
+
+</section>
+
+<section class="card" style="margin-top:13px">
+
+<div style="
+display:flex;
+justify-content:space-between;
+gap:10px;
+align-items:center;
+flex-wrap:wrap;
+">
+
+<div>
+
+<b>Historial</b>
+
+<div class="small" id="count"></div>
+
+</div>
+
+<button
+class="secondary"
+id="reset">
+
+Restaurar registros originales
+
+</button>
+
+</div>
+
+<div class="table">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Fecha</th>
+<th>Entrada</th>
+<th>Salida</th>
+<th>Duración</th>
+<th></th>
+</tr>
+
+</thead>
+
+<tbody id="rows"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</main>
+
+<script>
+
+/*
+====================================================
+REGISTROS INICIALES CORREGIDOS
+====================================================
+
+REGLAS:
+02:00 = 14:00
+04:00 = 16:00 cuando corresponde a salida
+09:00 = 09:00 AM
+10:00 = 10:00 AM
+
+Nunca se usan entradas de noche.
+Ningún registro supera las 9 horas.
+====================================================
+*/
+
+const INITIAL = [
+
+{"date":"2026-03-20","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-03-23","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-03-24","entry":"14:00","exit":"17:10","minutes":190},
+{"date":"2026-03-25","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-03-26","entry":"14:00","exit":"16:50","minutes":170},
+{"date":"2026-03-27","entry":"14:00","exit":"17:10","minutes":190},
+
+{"date":"2026-04-06","entry":"09:00","exit":"14:10","minutes":310},
+{"date":"2026-04-07","entry":"09:00","exit":"16:00","minutes":420},
+{"date":"2026-04-09","entry":"09:00","exit":"16:30","minutes":450},
+{"date":"2026-04-10","entry":"09:00","exit":"16:30","minutes":450},
+{"date":"2026-04-13","entry":"09:00","exit":"14:00","minutes":300},
+{"date":"2026-04-14","entry":"09:00","exit":"17:10","minutes":490},
+{"date":"2026-04-15","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-04-16","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-04-17","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-04-20","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-04-22","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-04-23","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-04-24","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-04-28","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-04-29","entry":"14:00","exit":"16:50","minutes":170},
+{"date":"2026-04-30","entry":"14:00","exit":"17:10","minutes":190},
+
+{"date":"2026-05-06","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-07","entry":"14:00","exit":"16:10","minutes":130},
+{"date":"2026-05-11","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-12","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-14","entry":"09:00","exit":"14:50","minutes":350},
+{"date":"2026-05-18","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-19","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-20","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-21","entry":"14:00","exit":"18:00","minutes":240},
+{"date":"2026-05-22","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-25","entry":"09:00","exit":"17:00","minutes":480},
+{"date":"2026-05-26","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-27","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-28","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-05-29","entry":"14:00","exit":"17:00","minutes":180},
+
+{"date":"2026-06-03","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-04","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-05","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-08","entry":"14:00","exit":"17:20","minutes":200},
+{"date":"2026-06-09","entry":"14:00","exit":"17:20","minutes":200},
+{"date":"2026-06-10","entry":"14:00","exit":"17:20","minutes":200},
+{"date":"2026-06-11","entry":"14:00","exit":"17:20","minutes":200},
+{"date":"2026-06-12","entry":"14:00","exit":"17:20","minutes":200},
+{"date":"2026-06-15","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-16","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-17","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-18","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-19","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-20","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-21","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-22","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-23","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-24","entry":"14:00","exit":"18:00","minutes":240},
+{"date":"2026-06-25","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-06-26","entry":"14:00","exit":"18:00","minutes":240},
+{"date":"2026-06-29","entry":"14:00","exit":"17:30","minutes":210},
+{"date":"2026-06-30","entry":"13:50","exit":"17:00","minutes":190},
+
+{"date":"2026-07-01","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-07-02","entry":"13:40","exit":"18:00","minutes":260},
+{"date":"2026-07-03","entry":"14:00","exit":"18:00","minutes":240},
+{"date":"2026-07-06","entry":"09:00","exit":"17:00","minutes":480},
+{"date":"2026-07-07","entry":"09:00","exit":"17:00","minutes":480},
+{"date":"2026-07-08","entry":"09:00","exit":"17:00","minutes":480},
+
+/* CORREGIDO: 02 = 14:00 */
+{"date":"2026-07-09","entry":"14:00","exit":"18:00","minutes":240},
+
+{"date":"2026-07-10","entry":"09:00","exit":"17:00","minutes":480},
+{"date":"2026-07-13","entry":"09:00","exit":"16:00","minutes":420},
+{"date":"2026-07-14","entry":"10:00","exit":"16:00","minutes":360},
+{"date":"2026-07-15","entry":"09:00","exit":"17:00","minutes":480},
+{"date":"2026-07-16","entry":"09:00","exit":"18:00","minutes":540},
+{"date":"2026-07-17","entry":"09:00","exit":"18:00","minutes":540},
+{"date":"2026-07-20","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-07-21","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-07-22","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-07-23","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-07-24","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-07-27","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-07-28","entry":"14:00","exit":"17:00","minutes":180},
+{"date":"2026-07-30","entry":"10:00","exit":"16:00","minutes":360},
+{"date":"2026-07-31","entry":"10:00","exit":"16:00","minutes":360},
+
+/* CORREGIDO: 04 = 16:00 */
+{"date":"2026-08-03","entry":"10:00","exit":"16:00","minutes":360},
+
+{"date":"2026-08-04","entry":"09:00","exit":"16:00","minutes":420},
+{"date":"2026-08-05","entry":"09:00","exit":"18:00","minutes":540},
+{"date":"2026-08-06","entry":"09:00","exit":"16:00","minutes":420},
+{"date":"2026-08-07","entry":"09:00","exit":"16:00","minutes":420},
+{"date":"2026-08-10","entry":"10:00","exit":"17:00","minutes":420},
+{"date":"2026-08-11","entry":"09:30","exit":"16:00","minutes":390},
+{"date":"2026-08-12","entry":"09:00","exit":"18:00","minutes":540},
+{"date":"2026-08-13","entry":"09:00","exit":"16:00","minutes":420}
+
+];
+
+
+/*
+====================================================
+CONFIGURACIÓN
+====================================================
+*/
+
+const META = 480 * 60;
+
+const STORAGE_KEY =
+    "calculadora_horas_servicio_v2";
+
+
+/*
+====================================================
+CARGAR DATOS
+====================================================
+*/
+
+let registros = cargarRegistros();
+
+
+function cargarRegistros() {
+
+    const guardados =
+        localStorage.getItem(STORAGE_KEY);
+
+    if (guardados) {
+
+        try {
+
+            const datos =
+                JSON.parse(guardados);
+
+            if (Array.isArray(datos)) {
+                return datos;
+            }
+
+        } catch (error) {
+
+            console.log(
+                "No se pudieron cargar los datos guardados."
+            );
+
+        }
+
+    }
+
+    return INITIAL.map(r => ({ ...r }));
+}
+
+
+function guardarRegistros() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(registros)
+    );
+
+}
+
+
+/*
+====================================================
+FUNCIONES
+====================================================
+*/
+
+function convertirDuracion(minutos) {
+
+    const horas =
+        Math.floor(minutos / 60);
+
+    const mins =
+        minutos % 60;
+
+    return horas + " h " + mins + " min";
+}
+
+
+function calcularMinutos(entrada, salida) {
+
+    const [horaEntrada, minutoEntrada] =
+        entrada.split(":").map(Number);
+
+    const [horaSalida, minutoSalida] =
+        salida.split(":").map(Number);
+
+    const inicio =
+        horaEntrada * 60 + minutoEntrada;
+
+    const fin =
+        horaSalida * 60 + minutoSalida;
+
+    let duracion =
+        fin - inicio;
+
+    /*
+    No se consideran turnos nocturnos.
+
+    Si la salida parece menor que la entrada,
+    NO sumamos 24 horas porque eso provocaría
+    errores enormes como 10:00 -> 04:00 = 18 horas.
+
+    En ese caso avisamos al usuario.
+    */
+
+    return duracion;
+}
+
+
+function obtenerTotal() {
+
+    return registros.reduce(
+        (total, registro) =>
+            total + registro.minutes,
+        0
+    );
+
+}
+
+
+function fechaBonita(fecha) {
+
+    const [anio, mes, dia] =
+        fecha.split("-");
+
+    return dia + "/" + mes + "/" + anio;
+
+}
+
+
+/*
+====================================================
+FECHA AUTOMÁTICA
+====================================================
+*/
+
+function ponerFechaActual() {
+
+    const ahora = new Date();
+
+    const anio =
+        ahora.getFullYear();
+
+    const mes =
+        String(
+            ahora.getMonth() + 1
+        ).padStart(2, "0");
+
+    const dia =
+        String(
+            ahora.getDate()
+        ).padStart(2, "0");
+
+    document.getElementById("date").value =
+        anio + "-" + mes + "-" + dia;
+}
+
+
+/*
+====================================================
+ACTUALIZAR RESUMEN
+====================================================
+*/
+
+function actualizar() {
+
+    const total =
+        obtenerTotal();
+
+    const faltantes =
+        Math.max(
+            META - total,
+            0
+        );
+
+    const porcentaje =
+        Math.min(
+            total / META * 100,
+            100
+        );
+
+
+    document.getElementById("total")
+        .textContent =
+        convertirDuracion(total);
+
+
+    document.getElementById("left")
+        .textContent =
+        convertirDuracion(faltantes);
+
+
+    document.getElementById("pct")
+        .textContent =
+        porcentaje.toFixed(2) + "%";
+
+
+    document.getElementById("bar")
+        .style.width =
+        porcentaje + "%";
+
+
+    if (total >= META) {
+
+        document.getElementById("status")
+            .textContent =
+            "🎉 Ya cumpliste las 480 horas.";
+
+    } else {
+
+        document.getElementById("status")
+            .textContent =
+            "Te faltan " +
+            convertirDuracion(faltantes) +
+            " para llegar a 480.";
+
+    }
+
+
+    document.getElementById("count")
+        .textContent =
+        registros.length +
+        " registros cargados";
+
+
+    mostrarHistorial();
+
+}
+
+
+/*
+====================================================
+MOSTRAR HISTORIAL
+====================================================
+*/
+
+function mostrarHistorial() {
+
+    const tbody =
+        document.getElementById("rows");
+
+    tbody.innerHTML = "";
+
+
+    [...registros]
+        .reverse()
+        .forEach((registro, posicion) => {
+
+            const indiceReal =
+                registros.length -
+                1 -
+                posicion;
+
+
+            const fila =
+                document.createElement("tr");
+
+
+            fila.innerHTML = `
+
+                <td>
+                    ${fechaBonita(registro.date)}
+                </td>
+
+                <td>
+                    ${registro.entry}
+                </td>
+
+                <td>
+                    ${registro.exit}
+                </td>
+
+                <td>
+                    ${convertirDuracion(
+                        registro.minutes
+                    )}
+                </td>
+
+                <td>
+
+                    <button
+                        class="danger"
+                        data-indice="${indiceReal}">
+
+                        Borrar
+
+                    </button>
+
+                </td>
+
+            `;
+
+
+            tbody.appendChild(fila);
+
+        });
+
+}
+
+
+/*
+====================================================
+AGREGAR REGISTRO
+====================================================
+*/
+
+document
+.getElementById("add")
+.addEventListener("click", function() {
+
+    const fecha =
+        document.getElementById("date").value;
+
+    let entrada =
+        document.getElementById("entry").value;
+
+    let salida =
+        document.getElementById("exit").value;
+
+
+    if (!fecha || !entrada || !salida) {
+
+        alert(
+            "Llena la fecha, entrada y salida, we 😭"
+        );
+
+        return;
+    }
+
+
+    /*
+    ================================================
+    CORRECCIÓN AUTOMÁTICA DE HORARIOS
+    ================================================
+
+    Si alguien mete 02:00 como entrada,
+    automáticamente se convierte en 14:00.
+
+    Esto evita volver a cometer el mismo error.
+    */
+
+    if (entrada.startsWith("02:")) {
+        entrada =
+            "14:" + entrada.split(":")[1];
+    }
+
+
+    /*
+    04:00 como salida significa 16:00.
+    */
+
+    if (salida.startsWith("04:")) {
+        salida =
+            "16:" + salida.split(":")[1];
+    }
+
+
+    const minutos =
+        calcularMinutos(
+            entrada,
+            salida
+        );
+
+
+    /*
+    No permitimos duraciones imposibles.
+    */
+
+    if (minutos <= 0) {
+
+        alert(
+            "⚠️ Esa combinación de entrada y salida no tiene sentido, we 😭"
+        );
+
+        return;
+    }
+
+
+    if (minutos > 540) {
+
+        alert(
+            "⚠️ Ese registro supera las 9 horas. Revisa si pusiste 02 en lugar de 14 o alguna otra hora mal escrita."
+        );
+
+        return;
+    }
+
+
+    registros.push({
+
+        date: fecha,
+
+        entry: entrada,
+
+        exit: salida,
+
+        minutes: minutos
+
+    });
+
+
+    registros.sort(
+        (a, b) =>
+            a.date.localeCompare(b.date)
+    );
+
+
+    guardarRegistros();
+
+    actualizar();
+
+
+    document.getElementById("entry")
+        .value = "";
+
+    document.getElementById("exit")
+        .value = "";
+
+    ponerFechaActual();
+
+});
+
+
+/*
+====================================================
+BORRAR REGISTRO
+====================================================
+*/
+
+document
+.getElementById("rows")
+.addEventListener(
+    "click",
+    function(event) {
+
+        const boton =
+            event.target.closest(
+                "[data-indice]"
+            );
+
+        if (!boton) return;
+
+
+        const indice =
+            Number(
+                boton.dataset.indice
+            );
+
+
+        if (
+            confirm(
+                "¿Seguro que quieres borrar este registro?"
+            )
+        ) {
+
+            registros.splice(
+                indice,
+                1
+            );
+
+            guardarRegistros();
+
+            actualizar();
+
+        }
+
+    }
+);
+
+
+/*
+====================================================
+RESTAURAR REGISTROS
+====================================================
+*/
+
+document
+.getElementById("reset")
+.addEventListener(
+    "click",
+    function() {
+
+        if (
+            confirm(
+                "Esto borrará los cambios guardados y restaurará los registros corregidos. ¿Continuar?"
+            )
+        ) {
+
+            registros =
+                INITIAL.map(
+                    r => ({ ...r })
+                );
+
+            guardarRegistros();
+
+            actualizar();
+
+        }
+
+    }
+);
+
+
+/*
+====================================================
+INICIAR
+====================================================
+*/
+
+ponerFechaActual();
+
+actualizar();
+
+</script>
+
+</body>
+</html>
